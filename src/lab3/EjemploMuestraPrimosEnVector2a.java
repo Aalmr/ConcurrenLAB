@@ -99,7 +99,7 @@ public class EjemploMuestraPrimosEnVector2a {
     //
     // Implementacion secuencial.
     //
-   /* System.out.println( "" );
+    System.out.println( "" );
     System.out.println( "Implementacion secuencial." );
     t1 = System.nanoTime();
     for( int i = 0; i < vectorNumeros.length; i++ ) {
@@ -166,7 +166,7 @@ public class EjemploMuestraPrimosEnVector2a {
     //
     // ....
 
-    */
+
     System.out.println( "" );
     System.out.println( "Implementacion paralela ciclica." );
     t1 = System.nanoTime();
