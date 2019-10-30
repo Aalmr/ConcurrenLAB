@@ -1,9 +1,24 @@
 package lab3;
 
+class HebraCiclica extends Thread{
+  int miId;
+  long[] vectorNumeros;
+  int numHebras;
+  public HebraCiclica(int miId, long[] vectorNumeros, int numHebras){
+    this.miId=miId;
+    this.vectorNumeros=vectorNumeros;
+    this.numHebras=numHebras;
+  }
+  public void run(){
+    for(int i=miId; i<vectorNumeros.length; i+=numHebras){
+      if(EjemploMuestraPrimosEnVector2a.esPrimo(vectorNumeros[i]))
+        System.out.println("  Encontrado primo: " + vectorNumeros[i]);
+    }
+  }
+}
 // ===========================================================================
 public class EjemploMuestraPrimosEnVector2a {
-// ===========================================================================
-
+// ==========================================================================
   // -------------------------------------------------------------------------
   public static void main( String args[] ) {
     int     numHebras;
@@ -56,7 +71,9 @@ public class EjemploMuestraPrimosEnVector2a {
     t2 = System.nanoTime();
     ts = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
     System.out.println( "Tiempo secuencial (seg.):                    " + ts );
-/*
+
+
+
     //
     // Implementacion paralela ciclica.
     //
@@ -65,10 +82,23 @@ public class EjemploMuestraPrimosEnVector2a {
     t1 = System.nanoTime();
     // Gestion de hebras para la implementacion paralela ciclica
     // ....
+    HebraCiclica[] hebras= new HebraCiclica[numHebras];
+    for(int i = 0;i<numHebras; i++ ){
+      hebras[i]=new HebraCiclica(i, vectorNumeros, numHebras);
+      hebras[i].start();
+    }
+    for(int i = 0;i<numHebras; i++ ){
+      try {
+        hebras[i].join();
+      }catch (InterruptedException e ){
+        e.printStackTrace();
+      }
+    }
     t2 = System.nanoTime();
     tc = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
+    double incremento= tc-ts;
     System.out.println( "Tiempo paralela ciclica (seg.):              " + tc );
-    System.out.println( "Incremento paralela ciclica:                 " + ... );
+    System.out.println( "Incremento paralela ciclica:                 " + incremento);
     //
     // Implementacion paralela por bloques.
     //
@@ -77,7 +107,7 @@ public class EjemploMuestraPrimosEnVector2a {
     // Implementacion paralela dinamica.
     //
     // ....
-*/
+
   }
 
   // -------------------------------------------------------------------------
