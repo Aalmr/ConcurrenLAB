@@ -1,5 +1,7 @@
 package lab3;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 class HebraCiclica extends Thread{
   int miId;
   long[] vectorNumeros;
@@ -16,6 +18,43 @@ class HebraCiclica extends Thread{
     }
   }
 }
+class HebraBloques extends Thread{
+  int miId;
+  long[] vectorNumeros;
+  int numHebras;
+  public HebraBloques(int miId, long[] vectorNumeros, int numHebras){
+    this.miId=miId;
+    this.vectorNumeros=vectorNumeros;
+    this.numHebras=numHebras;
+  }
+  public void run(){
+    int elementosHebra = vectorNumeros.length/numHebras;
+    int init= elementosHebra*miId;
+    int fin=Math.min(elementosHebra, vectorNumeros.length-init);
+    for(int i=init; i<fin; i++){
+      if(EjemploMuestraPrimosEnVector2a.esPrimo(vectorNumeros[i]))
+        System.out.println("  Encontrado primo: " + vectorNumeros[i]);
+    }
+  }
+}
+class HebraDinamica extends Thread{
+  static AtomicInteger index=new AtomicInteger(0);
+  long[] vectorNumeros;
+  int numHebras;
+  public HebraDinamica(long[] vectorNumeros, int numHebras){
+    this.vectorNumeros=vectorNumeros;
+    this.numHebras=numHebras;
+  }
+  public void run(){
+    int cont=index.incrementAndGet();
+    while (cont<vectorNumeros.length){
+      if(EjemploMuestraPrimosEnVector2a.esPrimo(vectorNumeros[cont]))
+        System.out.println("  Encontrado primo: " + vectorNumeros[cont]);
+      cont=index.incrementAndGet();
+    }
+  }
+}
+
 // ===========================================================================
 public class EjemploMuestraPrimosEnVector2a {
 // ==========================================================================
@@ -60,7 +99,7 @@ public class EjemploMuestraPrimosEnVector2a {
     //
     // Implementacion secuencial.
     //
-    System.out.println( "" );
+   /* System.out.println( "" );
     System.out.println( "Implementacion secuencial." );
     t1 = System.nanoTime();
     for( int i = 0; i < vectorNumeros.length; i++ ) {
@@ -82,14 +121,14 @@ public class EjemploMuestraPrimosEnVector2a {
     t1 = System.nanoTime();
     // Gestion de hebras para la implementacion paralela ciclica
     // ....
-    HebraCiclica[] hebras= new HebraCiclica[numHebras];
+    HebraCiclica[] hebrasCiclicas= new HebraCiclica[numHebras];
     for(int i = 0;i<numHebras; i++ ){
-      hebras[i]=new HebraCiclica(i, vectorNumeros, numHebras);
-      hebras[i].start();
+      hebrasCiclicas[i]=new HebraCiclica(i, vectorNumeros, numHebras);
+      hebrasCiclicas[i].start();
     }
     for(int i = 0;i<numHebras; i++ ){
       try {
-        hebras[i].join();
+        hebrasCiclicas[i].join();
       }catch (InterruptedException e ){
         e.printStackTrace();
       }
@@ -102,12 +141,52 @@ public class EjemploMuestraPrimosEnVector2a {
     //
     // Implementacion paralela por bloques.
     //
-    // ....
+    System.out.println( "" );
+    System.out.println( "Implementacion paralela por bloques." );
+    t1 = System.nanoTime();
+    HebraBloques[] hebrasBloques= new HebraBloques[numHebras];
+    for(int i = 0;i<numHebras; i++ ){
+      hebrasBloques[i]=new HebraBloques(i, vectorNumeros, numHebras);
+      hebrasBloques[i].start();
+    }
+    for(int i = 0;i<numHebras; i++ ){
+      try {
+        hebrasBloques[i].join();
+      }catch (InterruptedException e ){
+        e.printStackTrace();
+      }
+    }
+    t2 = System.nanoTime();
+    tb = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
+    incremento= tb-ts;
+    System.out.println( "Tiempo paralela en bloques (seg.):              " + tb );
+    System.out.println( "Incremento paralela en bloques:                 " + incremento);
     //
     // Implementacion paralela dinamica.
     //
     // ....
 
+    */
+    System.out.println( "" );
+    System.out.println( "Implementacion paralela ciclica." );
+    t1 = System.nanoTime();
+    HebraDinamica[] hebrasDinamicas= new HebraDinamica[numHebras];
+    for(int i = 0;i<numHebras; i++ ){
+      hebrasDinamicas[i]=new HebraDinamica(vectorNumeros, numHebras);
+      hebrasDinamicas[i].start();
+    }
+    for(int i = 0;i<numHebras; i++ ){
+      try {
+        hebrasDinamicas[i].join();
+      }catch (InterruptedException e ){
+        e.printStackTrace();
+      }
+    }
+    t2 = System.nanoTime();
+    td = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
+    //incremento= td-ts;
+    System.out.println( "Tiempo paralela ciclica (seg.):              " + td );
+    //System.out.println( "Incremento paralela ciclica:                 " + incremento);
   }
 
   // -------------------------------------------------------------------------
