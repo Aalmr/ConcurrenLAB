@@ -20,8 +20,8 @@ class CuentaIncrementos {
 // ============================================================================
 class MiHebra extends Thread {
 // ============================================================================
-  int                  tope;
-  CuentaIncrementos  c;
+  int                   tope;
+  CuentaIncrementos     c;
 
   // --------------------------------------------------------------------------
   public MiHebra( int tope, CuentaIncrementos c ) {
