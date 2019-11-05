@@ -1,5 +1,7 @@
 package lab3;
 
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 class HebraCiclica extends Thread {
