@@ -56,11 +56,11 @@ class HebraDinamica extends Thread {
     }
 
     public void run() {
-        int cont = index.incrementAndGet();
+        int cont = index.getAndIncrement();
         while (cont < vectorNumeros.length) {
             if (EjemploMuestraPrimosEnVector2a.esPrimo(vectorNumeros[cont]))
                 System.out.println("  Encontrado primo: " + vectorNumeros[cont]);
-            cont = index.incrementAndGet();
+            cont = index.getAndIncrement();
         }
     }
 }
