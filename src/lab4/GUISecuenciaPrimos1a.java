@@ -4,6 +4,36 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 
+class HebraTrabajadora extends Thread{
+  boolean flag;
+  JTextField txfMensajes;
+  HebraTrabajadora(JTextField txfMensajes){
+    flag=true;
+    this.txfMensajes=txfMensajes;
+  }
+  public void stopNow(){
+    flag=false;
+  }
+  public void run(){
+    int cont=0;
+    while(flag){
+      if(GUISecuenciaPrimos1a.esPrimo(cont)) {
+        int finalCont = cont;
+        SwingUtilities.invokeLater(() -> {
+          String aux = txfMensajes.getText();
+          aux = aux + " " + finalCont;
+          txfMensajes.setText(aux);
+        });
+        try {
+          Thread.sleep(500);
+        }catch (InterruptedException e){
+          e.printStackTrace();
+        }
+      }
+      cont++;
+    }
+  }
+}
 // ===========================================================================
 public class GUISecuenciaPrimos1a {
 // ===========================================================================
@@ -12,6 +42,7 @@ public class GUISecuenciaPrimos1a {
   JTextField  txfMensajes;
   JButton     btnComienzaSecuencia, btnCancelaSecuencia;
   JSlider     sldEspera;
+  HebraTrabajadora hebra;
 
   // -------------------------------------------------------------------------
   public static void main( String args[] ) {
@@ -72,8 +103,12 @@ public class GUISecuenciaPrimos1a {
     // Anyade codigo para procesar el evento del boton de Comienza secuencia.
     btnComienzaSecuencia.addActionListener( new ActionListener() {
         public void actionPerformed( ActionEvent e ) {
+          txfMensajes.setText(null);
           btnComienzaSecuencia.setEnabled( false );
           btnCancelaSecuencia.setEnabled( true);
+          hebra=new HebraTrabajadora(txfMensajes);
+          System.out.println("Hebra creada");
+          hebra.start();
         }
     } );
 
@@ -82,6 +117,7 @@ public class GUISecuenciaPrimos1a {
         public void actionPerformed( ActionEvent e ) {
           btnComienzaSecuencia.setEnabled( true );
           btnCancelaSecuencia.setEnabled( false );
+          hebra.stopNow();
         }
     } );
 
