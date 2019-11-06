@@ -7,9 +7,11 @@ import javax.swing.event.*;
 class HebraTrabajadora extends Thread{
   boolean flag;
   JTextField txfMensajes;
-  HebraTrabajadora(JTextField txfMensajes){
+  ZonaIntercambio intercambio;
+  HebraTrabajadora(JTextField txfMensajes, ZonaIntercambio intercambio){
     flag=true;
     this.txfMensajes=txfMensajes;
+    this.intercambio=intercambio;
   }
   public void stopNow(){
     flag=false;
@@ -25,7 +27,7 @@ class HebraTrabajadora extends Thread{
           txfMensajes.setText(aux);
         });
         try {
-          Thread.sleep(500);
+          Thread.sleep(intercambio.getMiliseconds());
         }catch (InterruptedException e){
           e.printStackTrace();
         }
@@ -33,6 +35,17 @@ class HebraTrabajadora extends Thread{
       cont++;
     }
   }
+}
+class ZonaIntercambio{
+    private long miliseconds=500L;
+
+    void setMiliseconds(long newM){
+        miliseconds=newM;
+    }
+    long getMiliseconds(){
+        return miliseconds;
+    }
+
 }
 // ===========================================================================
 public class GUISecuenciaPrimos1a {
@@ -43,6 +56,7 @@ public class GUISecuenciaPrimos1a {
   JButton     btnComienzaSecuencia, btnCancelaSecuencia;
   JSlider     sldEspera;
   HebraTrabajadora hebra;
+  ZonaIntercambio intercambio;
 
   // -------------------------------------------------------------------------
   public static void main( String args[] ) {
@@ -106,7 +120,7 @@ public class GUISecuenciaPrimos1a {
           txfMensajes.setText(null);
           btnComienzaSecuencia.setEnabled( false );
           btnCancelaSecuencia.setEnabled( true);
-          hebra=new HebraTrabajadora(txfMensajes);
+          hebra=new HebraTrabajadora(txfMensajes, intercambio);
           System.out.println("Hebra creada");
           hebra.start();
         }
@@ -120,14 +134,14 @@ public class GUISecuenciaPrimos1a {
           hebra.stopNow();
         }
     } );
-
+    intercambio=new ZonaIntercambio();
     // Anyade codigo para procesar el evento del slider " Espera " .
     sldEspera.addChangeListener( new ChangeListener() {
       public void stateChanged( ChangeEvent e ) {
         JSlider sl = ( JSlider ) e.getSource();
         if ( ! sl.getValueIsAdjusting() ) {
           long tiempoMilisegundos = ( long ) sl.getValue();
-          // ...
+          intercambio.setMiliseconds(tiempoMilisegundos);
         }
       }
     } );
