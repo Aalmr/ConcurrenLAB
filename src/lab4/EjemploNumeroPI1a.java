@@ -40,13 +40,13 @@ class MiHebraMultAcumulaciones1a extends Thread {
 }
 
 
-class MiHebraMultAcumulaciones1b extends Thread {
+class MiHebraUnaAcumulacion1 extends Thread {
     int miId, numHebras;
     long numRectangulos;
     Acumula a;
     double baseRectangulo;
 
-    MiHebraMultAcumulaciones1b(int miId, int numHebras, long numRectangulos, Acumula a, double baseRectangulo) {
+    MiHebraUnaAcumulacion1(int miId, int numHebras, long numRectangulos, Acumula a, double baseRectangulo) {
         this.miId = miId;
         this.numHebras = numHebras;
         this.numRectangulos = numRectangulos;
@@ -69,11 +69,11 @@ class EjemploNumeroPI1a {
 // ===========================================================================
 
     // -------------------------------------------------------------------------
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         long numRectangulos;
         double baseRectangulo, x, suma, pi;
         int numHebras;
-        MiHebraMultAcumulaciones1a vt[];
+        MiHebraMultAcumulaciones1a[] vt;
         Acumula a;
         long t1, t2;
         double tSec, tPar;
@@ -155,9 +155,9 @@ class EjemploNumeroPI1a {
         System.out.println("Una acumulacion por hebra.");
         t1 = System.nanoTime();
         a = new Acumula();
-        MiHebraMultAcumulaciones1b[] hebras = new MiHebraMultAcumulaciones1b[numHebras];
+        MiHebraUnaAcumulacion1[] hebras = new MiHebraUnaAcumulacion1[numHebras];
         for (int i = 0; i < numHebras; i++) {
-            hebras[i] = new MiHebraMultAcumulaciones1b(i, numHebras, numRectangulos, a, baseRectangulo);
+            hebras[i] = new MiHebraUnaAcumulacion1(i, numHebras, numRectangulos, a, baseRectangulo);
             hebras[i].start();
         }
 
