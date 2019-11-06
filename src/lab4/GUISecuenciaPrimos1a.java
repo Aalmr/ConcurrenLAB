@@ -1,3 +1,4 @@
+package lab4;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -71,7 +72,7 @@ public class GUISecuenciaPrimos1a {
     // Anyade codigo para procesar el evento del boton de Comienza secuencia.
     btnComienzaSecuencia.addActionListener( new ActionListener() {
         public void actionPerformed( ActionEvent e ) {
-          // ...
+
         }
     } );
 
