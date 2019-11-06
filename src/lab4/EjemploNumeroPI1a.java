@@ -114,7 +114,7 @@ class EjemploNumeroPI1a {
     tPar = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
     System.out.println( "Calculo del numero PI:   " + pi );
     System.out.println( "Tiempo ejecucion (s.):   " + tPar );
-    System.out.println( "Incremento velocidad :   " + tPar/tSec );
+    System.out.println( "Incremento velocidad :   " + tSec/tPar );
 
 
 /*
