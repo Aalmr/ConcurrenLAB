@@ -176,6 +176,7 @@ class MiHebraCalculadoraUnDisparo extends Thread{
           txfMensajes.setText(mensaje);
         });
       }
+
     }
   } // fin run
 }
