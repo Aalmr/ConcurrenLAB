@@ -200,7 +200,8 @@ class MiHebraCalculadoraUnDisparo2 extends Thread{
         GUITiroAlBlanco1b.NuevoDisparo nueva=zonaIntercambio.getTarea();
         proyectilesEnVuelo.add(new Proyectil1b(nueva.getVelocidadInicial(), nueva.getAnguloInicial()));
       }
-      for(Proyectil1b p:proyectilesEnVuelo){
+      for(int i = 0; i < proyectilesEnVuelo.size(); i++){
+        Proyectil1b p = proyectilesEnVuelo.get(i);
         p.muestra();
         p.mueveDuranteUnIncremental( canvas.getObjetivoX(), canvas.getObjetivoY() );
         p.dibujaProyectil( canvas );
@@ -277,7 +278,7 @@ class CanvasCampoTiro1b extends Canvas {
   }
   
   // --------------------------------------------------------------------------
-  public void dibujaProyectil( int x, int y ) {
+  public void dibujaProyectil( final int x, final int y ) {
     // Dibuja el proyectil.
     Graphics g = this.getGraphics();
     if( ( 0 <= x )&&( x < maxDimX )&&( 0 <= y )&&( y < maxDimY ) ) {
@@ -389,14 +390,20 @@ class Proyectil1b {
   public void dibujaProyectil( final CanvasCampoTiro1b cnvCampoTiro ) {
     // Dibuja la nueva posicion del proyectil, pero solo si la nueva
     // posicion es distinta de la anterior.
-    if( ( this.intPosX != this.intPosXOld )||
-       ( this.intPosY != this.intPosYOld ) ) {
+    final int x, y, xOld, yOld;
+    x = this.intPosX;
+    y = this.intPosY;
+    xOld = this.intPosXOld;
+    yOld = this.intPosYOld;
+
+    if( ( x != xOld )||
+       ( y != yOld ) ) {
       
       // Borra la posicion anterior.
-      cnvCampoTiro.borraProyectil( this.intPosXOld, this.intPosYOld );
+      cnvCampoTiro.borraProyectil( xOld, yOld );
       
       // Dibuja la nueva posicion del proyectil.
-      cnvCampoTiro.dibujaProyectil( this.intPosX, this.intPosY );
+      cnvCampoTiro.dibujaProyectil( x, y );
     }
   }
   
