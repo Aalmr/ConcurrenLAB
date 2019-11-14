@@ -1,4 +1,4 @@
-package lab3;
+
 
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -35,9 +35,9 @@ class HebraBloques extends Thread {
     }
 
     public void run() {
-        int elementosHebra = vectorNumeros.length / numHebras;
+        int elementosHebra = (vectorNumeros.length + numHebras -1 )/numHebras;
         int init = elementosHebra * miId;
-        int fin = Math.min(elementosHebra, vectorNumeros.length - init);
+        int fin = Math.min(init + elementosHebra, vectorNumeros.length);
         for (int i = init; i < fin; i++) {
             if (EjemploMuestraPrimosEnVector2a.esPrimo(vectorNumeros[i]))
                 System.out.println("  Encontrado primo: " + vectorNumeros[i]);
@@ -73,7 +73,7 @@ public class EjemploMuestraPrimosEnVector2a {
         int numHebras;
         long t1, t2;
         double ts, tc, tb, td;
-        long vectorNumeros[] = {
+        long vectorNumeros2[] = {
                 200000033L, 200000039L, 200000051L, 200000069L,
                 200000081L, 200000083L, 200000089L, 200000093L,
                 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
@@ -84,16 +84,16 @@ public class EjemploMuestraPrimosEnVector2a {
                 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
                 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L
         };
-        //// long    vectorNumeros[] = {
-        //// 200000033L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
-        //// 200000039L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
-        //// 200000051L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
-        //// 200000069L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
-        //// 200000081L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
-        //// 200000083L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
-        //// 200000089L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
-        //// 200000093L, 4L, 4L, 4L, 4L, 4L, 4L, 4L
-        //// };
+        long    vectorNumeros[] = {
+        200000033L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+        200000039L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+        200000051L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+        200000069L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+        200000081L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+        200000083L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+        200000089L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+        200000093L, 4L, 4L, 4L, 4L, 4L, 4L, 4L
+        };
         // Comprobacion y extraccion de los argumentos de entrada.
         if (args.length != 1) {
             System.err.println("Uso: java programa <numHebras>");

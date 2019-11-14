@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
@@ -90,7 +91,7 @@ public class GUITiroAlBlanco1b {
         zonaInter=new LinkedBlockingQueue<>();
         // Anyade un codigo para procesar el evento del boton "Dispara".
         hebra=new MiHebraCalculadoraUnDisparo2(zonaInter, cnvCampoTiro, txfMensajes);
-        hebra.setDaemon(true);
+        //hebra.setDaemon(true);
         hebra.start();
 
         btnDispara.addActionListener( new ActionListener() {
@@ -175,7 +176,7 @@ class MiHebraCalculadoraUnDisparo2 extends Thread{
 
   public void run(){
     while (true) {
-      while(proyectilesEnVuelo.size()==0 || !zonaIntercambio.isEmpty()){
+      while(proyectilesEnVuelo.isEmpty()|| !zonaIntercambio.isEmpty()){
         try {
           GUITiroAlBlanco1b.NuevoDisparo nueva = zonaIntercambio.take();
           proyectilesEnVuelo.add(new Proyectil1b(nueva.getVelocidadInicial(), nueva.getAnguloInicial()));
@@ -183,13 +184,11 @@ class MiHebraCalculadoraUnDisparo2 extends Thread{
           e.printStackTrace();
         }
       }
-      for(int i = 0; i < proyectilesEnVuelo.size(); i++){
+      for (int i = 0; i < proyectilesEnVuelo.size(); i++){
         Proyectil1b p = proyectilesEnVuelo.get(i);
         p.muestra();
         p.mueveDuranteUnIncremental( canvas.getObjetivoX(), canvas.getObjetivoY() );
-        SwingUtilities.invokeLater(()->{
-          p.dibujaProyectil( canvas );
-        });
+        p.dibujaProyectil( canvas );
         if( p.getEstadoProyectil() != 0 ) {
           String mensaje;
           if( p.getEstadoProyectil() == 2 ) {
@@ -386,10 +385,13 @@ class Proyectil1b {
        ( y != yOld ) ) {
       
       // Borra la posicion anterior.
-      cnvCampoTiro.borraProyectil( xOld, yOld );
-      
-      // Dibuja la nueva posicion del proyectil.
-      cnvCampoTiro.dibujaProyectil( x, y );
+      SwingUtilities.invokeLater(()->{
+        cnvCampoTiro.borraProyectil( xOld, yOld );
+
+        // Dibuja la nueva posicion del proyectil.
+        cnvCampoTiro.dibujaProyectil( x, y );
+      });
+
     }
   }
   
