@@ -187,7 +187,9 @@ class MiHebraCalculadoraUnDisparo2 extends Thread{
         Proyectil1b p = proyectilesEnVuelo.get(i);
         p.muestra();
         p.mueveDuranteUnIncremental( canvas.getObjetivoX(), canvas.getObjetivoY() );
-        p.dibujaProyectil( canvas );
+        SwingUtilities.invokeLater(()->{
+          p.dibujaProyectil( canvas );
+        });
         if( p.getEstadoProyectil() != 0 ) {
           String mensaje;
           if( p.getEstadoProyectil() == 2 ) {
@@ -201,6 +203,7 @@ class MiHebraCalculadoraUnDisparo2 extends Thread{
             cuadros.setText(mensaje);
           });
           proyectilesEnVuelo.remove(p);
+          i--;
         }
 
       }
