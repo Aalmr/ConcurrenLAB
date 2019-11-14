@@ -87,9 +87,9 @@ public class GUITiroAlBlanco1b {
         txfAnguloInicial = new JTextField(new Double(Math.round( 40.0 + Math.random() * 10.0 )).toString(), 6 );
         controles.add( txfAnguloInicial );
         btnDispara = new JButton( "Dispara" );
-        LinkedBlockingQueue<NuevoDisparo> proyectiles=new LinkedBlockingQueue<>();
+        zonaInter=new LinkedBlockingQueue<>();
         // Anyade un codigo para procesar el evento del boton "Dispara".
-        hebra=new MiHebraCalculadoraUnDisparo2(proyectiles, cnvCampoTiro, txfMensajes);
+        hebra=new MiHebraCalculadoraUnDisparo2(zonaInter, cnvCampoTiro, txfMensajes);
         hebra.setDaemon(true);
         hebra.start();
 
