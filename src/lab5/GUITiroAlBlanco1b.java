@@ -8,32 +8,7 @@ import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
-class ZonaIntercambio{
-  private volatile LinkedBlockingQueue<GUITiroAlBlanco1b.NuevoDisparo> queue= new LinkedBlockingQueue<>();
-  private volatile boolean setted=false;
-  void setTarea(GUITiroAlBlanco1b.NuevoDisparo disparo){
-    try{
-      queue.put(disparo);
-    }catch (InterruptedException e){
-      e.printStackTrace();
-    }
-    setted=true;
-  }
 
-  boolean isSetted(){
-    return setted;
-  }
-
-  GUITiroAlBlanco1b.NuevoDisparo getTarea(){
-    GUITiroAlBlanco1b.NuevoDisparo h=null;
-    try {
-      h=queue.take();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
-    return h;
-  }
-}
 // ============================================================================
 public class GUITiroAlBlanco1b {
   // ============================================================================
@@ -51,7 +26,7 @@ public class GUITiroAlBlanco1b {
   JTextField         txfAnguloInicial;
   JButton            btnDispara;
   MiHebraCalculadoraUnDisparo2 hebra;
-  ZonaIntercambio zonaIntercambio;
+  LinkedBlockingQueue zonaInter;
   
   // --------------------------------------------------------------------------
   public static void main( String args[] ) {
@@ -112,9 +87,9 @@ public class GUITiroAlBlanco1b {
         txfAnguloInicial = new JTextField(new Double(Math.round( 40.0 + Math.random() * 10.0 )).toString(), 6 );
         controles.add( txfAnguloInicial );
         btnDispara = new JButton( "Dispara" );
-        zonaIntercambio= new ZonaIntercambio();
+        LinkedBlockingQueue<NuevoDisparo> proyectiles=new LinkedBlockingQueue<>();
         // Anyade un codigo para procesar el evento del boton "Dispara".
-        hebra=new MiHebraCalculadoraUnDisparo2(zonaIntercambio, cnvCampoTiro, txfMensajes);
+        hebra=new MiHebraCalculadoraUnDisparo2(proyectiles, cnvCampoTiro, txfMensajes);
         hebra.setDaemon(true);
         hebra.start();
 
@@ -130,7 +105,11 @@ public class GUITiroAlBlanco1b {
                 txfMensajes.setText( "Calculando y dibujando nueva trayectoria" );
 
                 NuevoDisparo disparo=new NuevoDisparo(velocidad, angulo);
-                zonaIntercambio.setTarea(disparo);
+                try{
+                  zonaInter.put(disparo);
+                }catch (InterruptedException ex){
+                  ex.printStackTrace();
+                }
                 /*
                 while( p.getEstadoProyectil() == 0 )  {
                   
@@ -182,13 +161,13 @@ public class GUITiroAlBlanco1b {
 
 class MiHebraCalculadoraUnDisparo2 extends Thread{
   ArrayList<Proyectil1b> proyectilesEnVuelo;
-  ZonaIntercambio zonaIntercambio;
   CanvasCampoTiro1b canvas;
   JTextField cuadros;
+  LinkedBlockingQueue<GUITiroAlBlanco1b.NuevoDisparo> zonaIntercambio;
 
-  public MiHebraCalculadoraUnDisparo2(ZonaIntercambio zonaIntercambio, CanvasCampoTiro1b canvas, JTextField cuadros){
+  public MiHebraCalculadoraUnDisparo2(LinkedBlockingQueue<GUITiroAlBlanco1b.NuevoDisparo> zonaInter, CanvasCampoTiro1b canvas, JTextField cuadros){
     this.proyectilesEnVuelo=new ArrayList<>();
-    this.zonaIntercambio=zonaIntercambio;
+    this.zonaIntercambio=zonaInter;
     this.canvas=canvas;
     this.cuadros=cuadros;
 
@@ -196,9 +175,13 @@ class MiHebraCalculadoraUnDisparo2 extends Thread{
 
   public void run(){
     while (true) {
-      while(proyectilesEnVuelo.size()==0 || zonaIntercambio.isSetted()){
-        GUITiroAlBlanco1b.NuevoDisparo nueva=zonaIntercambio.getTarea();
-        proyectilesEnVuelo.add(new Proyectil1b(nueva.getVelocidadInicial(), nueva.getAnguloInicial()));
+      while(proyectilesEnVuelo.size()==0 || !zonaIntercambio.isEmpty()){
+        try {
+          GUITiroAlBlanco1b.NuevoDisparo nueva = zonaIntercambio.take();
+          proyectilesEnVuelo.add(new Proyectil1b(nueva.getVelocidadInicial(), nueva.getAnguloInicial()));
+        }catch(InterruptedException e){
+          e.printStackTrace();
+        }
       }
       for(int i = 0; i < proyectilesEnVuelo.size(); i++){
         Proyectil1b p = proyectilesEnVuelo.get(i);
