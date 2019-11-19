@@ -1,8 +1,8 @@
 package lab6;
-import lab3.EjemploMuestraPrimosEnVector2a;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 class MiHebra extends Thread{
   private int miId;
@@ -60,6 +60,37 @@ class MiHebra_2 extends Thread{
     }
   }
 }
+/*
+class MiHebra_3 extends Thread{
+  private int miId;
+  private ArrayList<String> arrayLineas;
+  private ConcurrentHashMap<String,Integer> hmCuentaPalabras;
+  private int numHebras;
+
+  public MiHebra_3(int miId, ArrayList<String> arrayLineas, ConcurrentHashMap<String,Integer> hmCuentaPalabras, int numHebras){
+    this.miId=miId;
+    this.arrayLineas=arrayLineas;
+    this.hmCuentaPalabras=hmCuentaPalabras;
+    this.numHebras=numHebras;
+  }
+
+  public void run(){
+    String palabraActual;
+    for( int i = miId; i < arrayLineas.size(); i+=numHebras) {
+      // Procesa la linea "i".
+      String[] palabras = arrayLineas.get(i).split("\\W+");
+      for (int j = 0; j < palabras.length; j++) {
+        // Procesa cada palabra de la linea "i", si es distinta de blancos.
+        palabraActual = palabras[j].trim();
+        if (palabraActual.length() > 0) {
+          EjemploPalabraMasUsada1a.contabilizaPalabraTable(hmCuentaPalabras, palabraActual);
+        }
+      }
+    }
+  }
+}
+*/
+
 // ============================================================================
 class EjemploPalabraMasUsada1a {
 // ============================================================================
@@ -246,12 +277,12 @@ class EjemploPalabraMasUsada1a {
     }
   }
 
-  public static void contabilizaPalabraTable(
+  public synchronized static void contabilizaPalabraTable(
           Hashtable<String,Integer> cuentaPalabras,
           String palabra ) {
     Integer numVeces = cuentaPalabras.get( palabra );
     if( numVeces != null ) {
-      cuentaPalabras.put( palabra, numVeces+1 );
+      cuentaPalabras.put( palabra, cuentaPalabras.get( palabra )+1 );
     } else {
       cuentaPalabras.put( palabra, 1 );
     }
