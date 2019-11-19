@@ -5,35 +5,11 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
-class ZonaIntercambio{
-  private volatile LinkedBlockingQueue<GUITiroAlBlanco1b.NuevoDisparo> queue= new LinkedBlockingQueue<>();
-  private volatile boolean setted=false;
-  void setTarea(GUITiroAlBlanco1b.NuevoDisparo disparo){
-    try{
-      queue.put(disparo);
-    }catch (InterruptedException e){
-      e.printStackTrace();
-    }
-    setted=true;
-  }
 
-  boolean isSetted(){
-    return setted;
-  }
-
-  GUITiroAlBlanco1b.NuevoDisparo getTarea(){
-    GUITiroAlBlanco1b.NuevoDisparo h=null;
-    try {
-      h=queue.take();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
-    return h;
-  }
-}
 // ============================================================================
 public class GUITiroAlBlanco1b {
   // ============================================================================
@@ -51,7 +27,7 @@ public class GUITiroAlBlanco1b {
   JTextField         txfAnguloInicial;
   JButton            btnDispara;
   MiHebraCalculadoraUnDisparo2 hebra;
-  ZonaIntercambio zonaIntercambio;
+  LinkedBlockingQueue zonaInter;
   
   // --------------------------------------------------------------------------
   public static void main( String args[] ) {
@@ -112,10 +88,10 @@ public class GUITiroAlBlanco1b {
         txfAnguloInicial = new JTextField(new Double(Math.round( 40.0 + Math.random() * 10.0 )).toString(), 6 );
         controles.add( txfAnguloInicial );
         btnDispara = new JButton( "Dispara" );
-        zonaIntercambio= new ZonaIntercambio();
+        zonaInter=new LinkedBlockingQueue<>();
         // Anyade un codigo para procesar el evento del boton "Dispara".
-        hebra=new MiHebraCalculadoraUnDisparo2(zonaIntercambio, cnvCampoTiro, txfMensajes);
-        hebra.setDaemon(true);
+        hebra=new MiHebraCalculadoraUnDisparo2(zonaInter, cnvCampoTiro, txfMensajes);
+        //hebra.setDaemon(true);
         hebra.start();
 
         btnDispara.addActionListener( new ActionListener() {
@@ -130,7 +106,11 @@ public class GUITiroAlBlanco1b {
                 txfMensajes.setText( "Calculando y dibujando nueva trayectoria" );
 
                 NuevoDisparo disparo=new NuevoDisparo(velocidad, angulo);
-                zonaIntercambio.setTarea(disparo);
+                try{
+                  zonaInter.put(disparo);
+                }catch (InterruptedException ex){
+                  ex.printStackTrace();
+                }
                 /*
                 while( p.getEstadoProyectil() == 0 )  {
                   
@@ -182,13 +162,13 @@ public class GUITiroAlBlanco1b {
 
 class MiHebraCalculadoraUnDisparo2 extends Thread{
   ArrayList<Proyectil1b> proyectilesEnVuelo;
-  ZonaIntercambio zonaIntercambio;
   CanvasCampoTiro1b canvas;
   JTextField cuadros;
+  LinkedBlockingQueue<GUITiroAlBlanco1b.NuevoDisparo> zonaIntercambio;
 
-  public MiHebraCalculadoraUnDisparo2(ZonaIntercambio zonaIntercambio, CanvasCampoTiro1b canvas, JTextField cuadros){
+  public MiHebraCalculadoraUnDisparo2(LinkedBlockingQueue<GUITiroAlBlanco1b.NuevoDisparo> zonaInter, CanvasCampoTiro1b canvas, JTextField cuadros){
     this.proyectilesEnVuelo=new ArrayList<>();
-    this.zonaIntercambio=zonaIntercambio;
+    this.zonaIntercambio=zonaInter;
     this.canvas=canvas;
     this.cuadros=cuadros;
 
@@ -196,11 +176,16 @@ class MiHebraCalculadoraUnDisparo2 extends Thread{
 
   public void run(){
     while (true) {
-      while(proyectilesEnVuelo.size()==0 || zonaIntercambio.isSetted()){
-        GUITiroAlBlanco1b.NuevoDisparo nueva=zonaIntercambio.getTarea();
-        proyectilesEnVuelo.add(new Proyectil1b(nueva.getVelocidadInicial(), nueva.getAnguloInicial()));
+      while(proyectilesEnVuelo.isEmpty()|| !zonaIntercambio.isEmpty()){
+        try {
+          GUITiroAlBlanco1b.NuevoDisparo nueva = zonaIntercambio.take();
+          proyectilesEnVuelo.add(new Proyectil1b(nueva.getVelocidadInicial(), nueva.getAnguloInicial()));
+        }catch(InterruptedException e){
+          e.printStackTrace();
+        }
       }
-      for(Proyectil1b p:proyectilesEnVuelo){
+      for (int i = 0; i < proyectilesEnVuelo.size(); i++){
+        Proyectil1b p = proyectilesEnVuelo.get(i);
         p.muestra();
         p.mueveDuranteUnIncremental( canvas.getObjetivoX(), canvas.getObjetivoY() );
         p.dibujaProyectil( canvas );
@@ -217,6 +202,7 @@ class MiHebraCalculadoraUnDisparo2 extends Thread{
             cuadros.setText(mensaje);
           });
           proyectilesEnVuelo.remove(p);
+          i--;
         }
 
       }
@@ -277,7 +263,7 @@ class CanvasCampoTiro1b extends Canvas {
   }
   
   // --------------------------------------------------------------------------
-  public void dibujaProyectil( int x, int y ) {
+  public void dibujaProyectil( final int x, final int y ) {
     // Dibuja el proyectil.
     Graphics g = this.getGraphics();
     if( ( 0 <= x )&&( x < maxDimX )&&( 0 <= y )&&( y < maxDimY ) ) {
@@ -389,14 +375,23 @@ class Proyectil1b {
   public void dibujaProyectil( final CanvasCampoTiro1b cnvCampoTiro ) {
     // Dibuja la nueva posicion del proyectil, pero solo si la nueva
     // posicion es distinta de la anterior.
-    if( ( this.intPosX != this.intPosXOld )||
-       ( this.intPosY != this.intPosYOld ) ) {
+    final int x, y, xOld, yOld;
+    x = this.intPosX;
+    y = this.intPosY;
+    xOld = this.intPosXOld;
+    yOld = this.intPosYOld;
+
+    if( ( x != xOld )||
+       ( y != yOld ) ) {
       
       // Borra la posicion anterior.
-      cnvCampoTiro.borraProyectil( this.intPosXOld, this.intPosYOld );
-      
-      // Dibuja la nueva posicion del proyectil.
-      cnvCampoTiro.dibujaProyectil( this.intPosX, this.intPosY );
+      SwingUtilities.invokeLater(()->{
+        cnvCampoTiro.borraProyectil( xOld, yOld );
+
+        // Dibuja la nueva posicion del proyectil.
+        cnvCampoTiro.dibujaProyectil( x, y );
+      });
+
     }
   }
   
