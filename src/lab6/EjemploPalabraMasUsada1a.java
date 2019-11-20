@@ -3,6 +3,7 @@ package lab6;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 class MiHebra extends Thread{
   private int miId;
@@ -60,7 +61,7 @@ class MiHebra_2 extends Thread{
     }
   }
 }
-/*
+
 class MiHebra_3 extends Thread{
   private int miId;
   private ArrayList<String> arrayLineas;
@@ -83,13 +84,70 @@ class MiHebra_3 extends Thread{
         // Procesa cada palabra de la linea "i", si es distinta de blancos.
         palabraActual = palabras[j].trim();
         if (palabraActual.length() > 0) {
-          EjemploPalabraMasUsada1a.contabilizaPalabraTable(hmCuentaPalabras, palabraActual);
+          EjemploPalabraMasUsada1a.contabilizaPalabraConHashMap(hmCuentaPalabras, palabraActual);
         }
       }
     }
   }
 }
-*/
+
+class MiHebra_4 extends Thread{
+  private int miId;
+  private ArrayList<String> arrayLineas;
+  private ConcurrentHashMap<String,Integer> hmCuentaPalabras;
+  private int numHebras;
+
+  public MiHebra_4(int miId, ArrayList<String> arrayLineas, ConcurrentHashMap<String,Integer> hmCuentaPalabras, int numHebras){
+    this.miId=miId;
+    this.arrayLineas=arrayLineas;
+    this.hmCuentaPalabras=hmCuentaPalabras;
+    this.numHebras=numHebras;
+  }
+
+  public void run(){
+    String palabraActual;
+    for( int i = miId; i < arrayLineas.size(); i+=numHebras) {
+      // Procesa la linea "i".
+      String[] palabras = arrayLineas.get(i).split("\\W+");
+      for (int j = 0; j < palabras.length; j++) {
+        // Procesa cada palabra de la linea "i", si es distinta de blancos.
+        palabraActual = palabras[j].trim();
+        if (palabraActual.length() > 0) {
+          EjemploPalabraMasUsada1a.contabilizaPalabraConHashMap2(hmCuentaPalabras, palabraActual);
+        }
+      }
+    }
+  }
+}
+
+class MiHebra_5 extends Thread{
+  private int miId;
+  private ArrayList<String> arrayLineas;
+  private ConcurrentHashMap<String,AtomicInteger> hmCuentaPalabras;
+  private int numHebras;
+
+  public MiHebra_5(int miId, ArrayList<String> arrayLineas, ConcurrentHashMap<String, AtomicInteger> hmCuentaPalabras, int numHebras){
+    this.miId=miId;
+    this.arrayLineas=arrayLineas;
+    this.hmCuentaPalabras=hmCuentaPalabras;
+    this.numHebras=numHebras;
+  }
+
+  public void run(){
+    String palabraActual;
+    for( int i = miId; i < arrayLineas.size(); i+=numHebras) {
+      // Procesa la linea "i".
+      String[] palabras = arrayLineas.get(i).split("\\W+");
+      for (int j = 0; j < palabras.length; j++) {
+        // Procesa cada palabra de la linea "i", si es distinta de blancos.
+        palabraActual = palabras[j].trim();
+        if (palabraActual.length() > 0) {
+          EjemploPalabraMasUsada1a.contabilizaPalabraConHashMap3(hmCuentaPalabras, palabraActual);
+        }
+      }
+    }
+  }
+}
 
 // ============================================================================
 class EjemploPalabraMasUsada1a {
@@ -184,10 +242,10 @@ class EjemploPalabraMasUsada1a {
     }
     t2 = System.nanoTime();
     double tt2 = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
-    System.out.print( "Implemen. paralela 1: " );
+    System.out.print( "Implemen. HashMap: " );
     imprimePalabraMasUsadaYVeces( maCuentaPalabras );
     System.out.println( " Tiempo(s): " + tt2  + " , Incremento " + tt/tt2);
-    System.out.println( "Num. elems. tabla hash: " + maCuentaPalabras.size() );
+    System.out.println( "Num. elems. HashMap: " + maCuentaPalabras.size() );
     System.out.println();
 
     //
@@ -210,14 +268,36 @@ class EjemploPalabraMasUsada1a {
     }
     t2 = System.nanoTime();
     double tt3 = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
-    System.out.print( "Implemen. paralela 1: " );
+    System.out.print( "Implemen. tabla hash: " );
     imprimePalabraMasUsadaYVeces( taCuentaPalabras );
     System.out.println( " Tiempo(s): " + tt3  + " , Incremento " + tt/tt3);
     System.out.println( "Num. elems. tabla hash: " + taCuentaPalabras.size() );
     System.out.println();
-/*
+
     //
     // Implementacion paralela 3: Uso de ConcurrentHashMap
+        t1 = System.nanoTime();
+    ConcurrentHashMap<String, Integer> conCuentaPalabras=new ConcurrentHashMap<>();
+    MiHebra_3[] hebras3= new MiHebra_3[numHebras];
+    for(int i=0; i<numHebras; i++){
+      hebras3[i]=new MiHebra_3(i, arrayLineas, conCuentaPalabras, numHebras);
+      hebras3[i].start();
+    }
+    for(int i=0; i<numHebras; i++){
+      try{
+        hebras3[i].join();
+      }catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+    t2 = System.nanoTime();
+    double tt4 = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
+    System.out.print( "Implemen. ConcurrentHashMap: " );
+    imprimePalabraMasUsadaYVeces( taCuentaPalabras );
+    System.out.println( " Tiempo(s): " + tt4  + " , Incremento " + tt/tt4);
+    System.out.println( "Num. elems. ConcurrentHashMap: " + conCuentaPalabras.size() );
+    System.out.println();
+
     //
     // ...
 
@@ -225,12 +305,55 @@ class EjemploPalabraMasUsada1a {
     // Implementacion paralela 4: Uso de ConcurrentHashMap 
     //
     // ...
+        t1 = System.nanoTime();
+    conCuentaPalabras=new ConcurrentHashMap<>();
+    MiHebra_4[] hebras4= new MiHebra_4[numHebras];
+    for(int i=0; i<numHebras; i++){
+      hebras4[i]=new MiHebra_4(i, arrayLineas, conCuentaPalabras, numHebras);
+      hebras4[i].start();
+    }
+    for(int i=0; i<numHebras; i++){
+      try{
+        hebras4[i].join();
+      }catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+    t2 = System.nanoTime();
+    double tt5 = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
+    System.out.print( "Implemen. ConcurrentHashMap no-cerrojos: " );
+    imprimePalabraMasUsadaYVeces( taCuentaPalabras );
+    System.out.println( " Tiempo(s): " + tt5  + " , Incremento " + tt/tt5);
+    System.out.println( "Num. elems. ConcurrentHashMap no-cerrojos: " + conCuentaPalabras.size() );
+    System.out.println();
+
 
     //
     // Implementacion paralela 5: Uso de ConcurrentHashMap
     //
     // ...
-
+        t1 = System.nanoTime();
+    ConcurrentHashMap<String, AtomicInteger> AtomicCuentaPalabras=new ConcurrentHashMap<>();
+    MiHebra_5[] hebras5= new MiHebra_5[numHebras];
+    for(int i=0; i<numHebras; i++){
+      hebras5[i]=new MiHebra_5(i, arrayLineas, AtomicCuentaPalabras, numHebras);
+      hebras5[i].start();
+    }
+    for(int i=0; i<numHebras; i++){
+      try{
+        hebras5[i].join();
+      }catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+    t2 = System.nanoTime();
+    double tt6 = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
+    System.out.print( "Implemen. ConcurrentHashMap no-cerrojos: " );
+    imprimePalabraMasUsadaYVeces( taCuentaPalabras );
+    System.out.println( " Tiempo(s): " + tt6  + " , Incremento " + tt/tt6);
+    System.out.println( "Num. elems. ConcurrentHashMap no-cerrojos: " + conCuentaPalabras.size() );
+    System.out.println();
+    /*
     //
     // Implementacion paralela 6: Uso de ConcurrentHashMap 
     //
@@ -276,6 +399,43 @@ class EjemploPalabraMasUsada1a {
       cuentaPalabras.put( palabra, 1 );
     }
   }
+  public static synchronized void contabilizaPalabraConHashMap(
+          ConcurrentHashMap<String,Integer> cuentaPalabras,
+          String palabra ) {
+    Integer numVeces = cuentaPalabras.get( palabra );
+    if( numVeces != null ) {
+      cuentaPalabras.put( palabra, numVeces+1 );
+    } else {
+      cuentaPalabras.put( palabra, 1 );
+    }
+  }
+
+  public static void contabilizaPalabraConHashMap2(
+          ConcurrentHashMap<String,Integer> cuentaPalabras,
+          String palabra ) {
+    Integer contadorActual;
+    boolean modif;
+    contadorActual =cuentaPalabras.putIfAbsent(palabra, 1);
+    if(contadorActual!=null){
+      do{
+        contadorActual=cuentaPalabras.get(palabra);
+        modif=cuentaPalabras.replace(palabra, contadorActual, contadorActual+1);
+      }while(!modif);
+    }
+  }
+
+  public static void contabilizaPalabraConHashMap3(
+          ConcurrentHashMap<String,AtomicInteger> cuentaPalabras,
+          String palabra ) {
+    AtomicInteger actual;
+    actual =cuentaPalabras.putIfAbsent(palabra, new AtomicInteger(1));
+    if(actual!=null){
+
+      cuentaPalabras.put(palabra, new AtomicInteger(actual.incrementAndGet()));
+
+    }
+  }
+
 
   public synchronized static void contabilizaPalabraTable(
           Hashtable<String,Integer> cuentaPalabras,

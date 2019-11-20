@@ -22,9 +22,7 @@ class HebraTrabajadora extends Thread{
       if(GUISecuenciaPrimos1a.esPrimo(cont)) {
         int finalCont = cont;
         SwingUtilities.invokeLater(() -> {
-          String aux = txfMensajes.getText();
-          aux = aux + " " + finalCont;
-          txfMensajes.setText(aux);
+          txfMensajes.setText(Integer.toString(finalCont));
         });
         try {
           Thread.sleep(intercambio.getMiliseconds());
@@ -37,7 +35,10 @@ class HebraTrabajadora extends Thread{
   }
 }
 class ZonaIntercambio{
-    private long miliseconds=500L;
+    private volatile long miliseconds;
+    public ZonaIntercambio(long valor){
+      this.miliseconds=valor;
+    }
 
     void setMiliseconds(long newM){
         miliseconds=newM;
@@ -117,7 +118,6 @@ public class GUISecuenciaPrimos1a {
     // Anyade codigo para procesar el evento del boton de Comienza secuencia.
     btnComienzaSecuencia.addActionListener( new ActionListener() {
         public void actionPerformed( ActionEvent e ) {
-          txfMensajes.setText(null);
           btnComienzaSecuencia.setEnabled( false );
           btnCancelaSecuencia.setEnabled( true);
           hebra=new HebraTrabajadora(txfMensajes, intercambio);
@@ -134,7 +134,7 @@ public class GUISecuenciaPrimos1a {
           hebra.stopNow();
         }
     } );
-    intercambio=new ZonaIntercambio();
+    intercambio=new ZonaIntercambio(valorMedio);
     // Anyade codigo para procesar el evento del slider " Espera " .
     sldEspera.addChangeListener( new ChangeListener() {
       public void stateChanged( ChangeEvent e ) {
