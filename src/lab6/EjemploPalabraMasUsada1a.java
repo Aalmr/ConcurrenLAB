@@ -5,6 +5,14 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static java.util.stream.Collectors.counting;
+import java.util.Map;
+import java.util.stream.*;
+import java.util.function.*;
+import static java.util.stream.Collectors.*;
+import java.util.Comparator.*;
+
+
 class MiHebra extends Thread{
   private int miId;
   private ArrayList<String> arrayLineas;
@@ -322,7 +330,7 @@ class EjemploPalabraMasUsada1a {
     t2 = System.nanoTime();
     double tt5 = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
     System.out.print( "Implemen. ConcurrentHashMap no-cerrojos: " );
-    imprimePalabraMasUsadaYVeces( taCuentaPalabras );
+    imprimePalabraMasUsadaYVeces( conCuentaPalabras );
     System.out.println( " Tiempo(s): " + tt5  + " , Incremento " + tt/tt5);
     System.out.println( "Num. elems. ConcurrentHashMap no-cerrojos: " + conCuentaPalabras.size() );
     System.out.println();
@@ -349,7 +357,7 @@ class EjemploPalabraMasUsada1a {
     t2 = System.nanoTime();
     double tt6 = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
     System.out.print( "Implemen. ConcurrentHashMap no-cerrojos: " );
-    imprimePalabraMasUsadaYVeces( taCuentaPalabras );
+    imprimePalabraMasUsadaYVecesAtomic( AtomicCuentaPalabras );
     System.out.println( " Tiempo(s): " + tt6  + " , Incremento " + tt/tt6);
     System.out.println( "Num. elems. ConcurrentHashMap no-cerrojos: " + conCuentaPalabras.size() );
     System.out.println();
@@ -358,12 +366,29 @@ class EjemploPalabraMasUsada1a {
     // Implementacion paralela 6: Uso de ConcurrentHashMap 
     //
     // ...
-
+*/
     //
     // Implementacion paralela 7: Uso de Streams
     //
     // ...
+    /*
+    t1 = System.nanoTime();
+    Map<String , Long> stCuentaPalabras = arrayLineas.parallelStream()
+            .filter(s -> s!=null )
+            .map(s -> s.split("\\W+"))
+            .flatMap(Arrays:: stream)
+            .map(String::trim)
+            .filter(s -> (s.length() > 0))
+            .collect(groupingBy(s -> s , counting ()));
+    t2 = System.nanoTime();
+    double tt7 = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
+    System.out.print( "Implemen. Streams: " );
+    //imprimePalabraMasUsadaYVeces( stCuentaPalabras );
+    System.out.println( " Tiempo(s): " + tt7  + " , Incremento " + tt/tt7);
+    System.out.println( "Num. elems. Streams: " + stCuentaPalabras.size() );
+    System.out.println();
 */
+
     System.out.println( "Fin de programa." );
   }
 
@@ -480,6 +505,30 @@ class EjemploPalabraMasUsada1a {
     // Imprime resultado.
     System.out.print( "( Palabra: '" + palabraMasUsada + "' " + 
                          "veces: " + numVecesPalabraMasUsada + " )" );
+  }
+  static void imprimePalabraMasUsadaYVecesAtomic(
+          Map<String,AtomicInteger> cuentaPalabras ) {
+    ArrayList<Map.Entry> lista =
+            new ArrayList<Map.Entry>( cuentaPalabras.entrySet() );
+
+    String palabraMasUsada = "";
+    int numVecesPalabraMasUsada=0;
+    // Calcula la palabra mas usada.
+    for( int i = 0; i < lista.size(); i++ ) {
+      String palabra = ( String ) lista.get( i ).getKey();
+      AtomicInteger numVecesAtomic = ( AtomicInteger ) lista.get( i ).getValue();
+      int numVeces=numVecesAtomic.intValue();
+      if( i == 0 ) {
+        palabraMasUsada = palabra;
+        numVecesPalabraMasUsada = numVeces;
+      } else if( numVecesPalabraMasUsada < numVeces ) {
+        palabraMasUsada = palabra;
+        numVecesPalabraMasUsada = numVeces;
+      }
+    }
+    // Imprime resultado.
+    System.out.print( "( Palabra: '" + palabraMasUsada + "' " +
+            "veces: " + numVecesPalabraMasUsada + " )" );
   }
 
   // --------------------------------------------------------------------------
