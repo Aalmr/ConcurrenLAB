@@ -156,6 +156,34 @@ class MiHebra_5 extends Thread{
     }
   }
 }
+class MiHebra_6 extends Thread{
+  private int miId;
+  private ArrayList<String> arrayLineas;
+  private ConcurrentHashMap<String,AtomicInteger> hmCuentaPalabras;
+  private int numHebras;
+
+  public MiHebra_6(int miId, ArrayList<String> arrayLineas, ConcurrentHashMap<String, AtomicInteger> hmCuentaPalabras, int numHebras){
+    this.miId=miId;
+    this.arrayLineas=arrayLineas;
+    this.hmCuentaPalabras=hmCuentaPalabras;
+    this.numHebras=numHebras;
+  }
+
+  public void run(){
+    String palabraActual;
+    for( int i = miId; i < arrayLineas.size(); i+=numHebras) {
+      // Procesa la linea "i".
+      String[] palabras = arrayLineas.get(i).split("\\W+");
+      for (int j = 0; j < palabras.length; j++) {
+        // Procesa cada palabra de la linea "i", si es distinta de blancos.
+        palabraActual = palabras[j].trim();
+        if (palabraActual.length() > 0) {
+          EjemploPalabraMasUsada1a.contabilizaPalabraConHashMap3(hmCuentaPalabras, palabraActual);
+        }
+      }
+    }
+  }
+}
 
 // ============================================================================
 class EjemploPalabraMasUsada1a {
@@ -356,17 +384,36 @@ class EjemploPalabraMasUsada1a {
     }
     t2 = System.nanoTime();
     double tt6 = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
-    System.out.print( "Implemen. ConcurrentHashMap no-cerrojos: " );
+    System.out.print( "Implemen. ConcurrentHashMap Atomic: " );
     imprimePalabraMasUsadaYVecesAtomic( AtomicCuentaPalabras );
     System.out.println( " Tiempo(s): " + tt6  + " , Incremento " + tt/tt6);
-    System.out.println( "Num. elems. ConcurrentHashMap no-cerrojos: " + conCuentaPalabras.size() );
+    System.out.println( "Num. elems. ConcurrentHashMap Atomic: " + AtomicCuentaPalabras.size() );
     System.out.println();
     /*
     //
     // Implementacion paralela 6: Uso de ConcurrentHashMap 
     //
     // ...
-*/
+*/    ConcurrentHashMap<String, AtomicInteger> AtomicCuentaPalabras2=new ConcurrentHashMap<>(1000, 0.75F, 256);
+    MiHebra_6[] hebras6= new MiHebra_6[numHebras];
+    for(int i=0; i<numHebras; i++){
+      hebras6[i]=new MiHebra_6(i, arrayLineas, AtomicCuentaPalabras2, numHebras);
+      hebras6[i].start();
+    }
+    for(int i=0; i<numHebras; i++){
+      try{
+        hebras6[i].join();
+      }catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+    t2 = System.nanoTime();
+    double tt7 = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
+    System.out.print( "Implemen. ConcurrentHashMap con 256 niveles: " );
+    imprimePalabraMasUsadaYVecesAtomic( AtomicCuentaPalabras2 );
+    System.out.println( " Tiempo(s): " + tt7  + " , Incremento " + tt/tt7);
+    System.out.println( "Num. elems. ConcurrentHashMap no-cerrojos: " + AtomicCuentaPalabras2.size() );
+    System.out.println();
     //
     // Implementacion paralela 7: Uso de Streams
     //
@@ -381,10 +428,10 @@ class EjemploPalabraMasUsada1a {
             .filter(s -> (s.length() > 0))
             .collect(groupingBy(s -> s , counting ()));
     t2 = System.nanoTime();
-    double tt7 = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
+    double tt8 = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
     System.out.print( "Implemen. Streams: " );
     imprimePalabraMasUsadaYVecesStreamLong( stCuentaPalabras );
-    System.out.println( " Tiempo(s): " + tt7  + " , Incremento " + tt/tt7);
+    System.out.println( " Tiempo(s): " + tt8  + " , Incremento " + tt/tt8);
     System.out.println( "Num. elems. Streams: " + stCuentaPalabras.size() );
     System.out.println();
 
