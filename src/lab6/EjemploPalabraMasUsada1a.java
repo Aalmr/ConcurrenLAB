@@ -371,7 +371,7 @@ class EjemploPalabraMasUsada1a {
     // Implementacion paralela 7: Uso de Streams
     //
     // ...
-    /*
+
     t1 = System.nanoTime();
     Map<String , Long> stCuentaPalabras = arrayLineas.parallelStream()
             .filter(s -> s!=null )
@@ -383,11 +383,11 @@ class EjemploPalabraMasUsada1a {
     t2 = System.nanoTime();
     double tt7 = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
     System.out.print( "Implemen. Streams: " );
-    //imprimePalabraMasUsadaYVeces( stCuentaPalabras );
+    imprimePalabraMasUsadaYVecesStreamLong( stCuentaPalabras );
     System.out.println( " Tiempo(s): " + tt7  + " , Incremento " + tt/tt7);
     System.out.println( "Num. elems. Streams: " + stCuentaPalabras.size() );
     System.out.println();
-*/
+
 
     System.out.println( "Fin de programa." );
   }
@@ -455,9 +455,7 @@ class EjemploPalabraMasUsada1a {
     AtomicInteger actual;
     actual =cuentaPalabras.putIfAbsent(palabra, new AtomicInteger(1));
     if(actual!=null){
-
-      cuentaPalabras.put(palabra, new AtomicInteger(actual.incrementAndGet()));
-
+        cuentaPalabras.get(palabra).getAndIncrement();
     }
   }
 
@@ -484,7 +482,7 @@ class EjemploPalabraMasUsada1a {
   }
   // --------------------------------------------------------------------------
   static void imprimePalabraMasUsadaYVeces(
-                  Map<String,Integer> cuentaPalabras ) {
+                  Map<String, Integer> cuentaPalabras ) {
     ArrayList<Map.Entry> lista = 
         new ArrayList<Map.Entry>( cuentaPalabras.entrySet() );
 
@@ -531,6 +529,29 @@ class EjemploPalabraMasUsada1a {
             "veces: " + numVecesPalabraMasUsada + " )" );
   }
 
+
+  static void imprimePalabraMasUsadaYVecesStreamLong(
+          Map<String,Long> cuentaPalabras ) {
+    ArrayList<Map.Entry> lista =
+          new ArrayList<Map.Entry>( cuentaPalabras.entrySet() );
+
+    String palabraMasUsada = "";
+    long    numVecesPalabraMasUsada = 0;
+    // Calcula la palabra mas usada.
+    for( int i = 0; i < lista.size(); i++ ) {
+      String palabra = ( String ) lista.get( i ).getKey();
+      long numVeces = ( Long ) lista.get( i ).getValue();
+      if( i == 0 ) {
+        palabraMasUsada = palabra;
+        numVecesPalabraMasUsada = numVeces;
+      } else if( numVecesPalabraMasUsada < numVeces ) {
+        palabraMasUsada = palabra;
+        numVecesPalabraMasUsada = numVeces;
+      }
+    }
+    // Imprime resultado.
+    System.out.print( "( Palabra: '" + palabraMasUsada + "' " +
+            "veces: " + numVecesPalabraMasUsada + " )" );  }
   // --------------------------------------------------------------------------
   static void printCuentaPalabrasOrdenadas(
                   HashMap<String,Integer> cuentaPalabras ) {
