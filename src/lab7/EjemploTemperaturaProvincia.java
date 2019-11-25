@@ -13,6 +13,19 @@ class Tarea{
     this.esVeneno= false;
   }
 }
+
+class CalculaMaxMin extends Thread{
+  BlockingQueue<Tarea> cola;
+
+  public CalculaMaxMin(BlockingQueue<Tarea> cola){
+    this.cola = cola;
+  }
+
+  public void run(){
+
+  }
+  
+}
 class EjemploTemperaturaProvincia {
   public static void main(String[] args) {
     int                numHebras, codProvincia, desp;
