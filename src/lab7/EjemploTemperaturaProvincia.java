@@ -5,7 +5,14 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-
+class Tarea{
+  boolean esVeneno;
+  int codPueblo;
+  public Tarea(int codPueblo){
+    this.codPueblo=codPueblo;
+    this.esVeneno= false;
+  }
+}
 class EjemploTemperaturaProvincia {
   public static void main(String[] args) {
     int                numHebras, codProvincia, desp;
@@ -90,6 +97,7 @@ class EjemploTemperaturaProvincia {
     //
     // Implementacion paralela: Thread Pool con Gestion Propia.
     //
+    /*
     System.out.println();
     t1 = System.nanoTime();
     // ...
@@ -98,6 +106,7 @@ class EjemploTemperaturaProvincia {
     System.out.print( "Implementacion paralela: Gestion Propia.     " );
     System.out.println( " Tiempo(s): " + tp + " , Incremento: " + ... );
     System.out.println( "  Pueblo: " ... );
+     */
     
     //
     // Implementacion paralela: Thread Pool con awaitTermination.
