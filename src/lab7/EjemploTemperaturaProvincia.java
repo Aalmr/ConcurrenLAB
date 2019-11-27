@@ -191,7 +191,8 @@ class EjemploTemperaturaProvincia {
       while ((linea = br.readLine()) != null) {
         exec.execute(new TareaPool(fecha, MaxMin, Integer.parseInt(linea)));
       }
-      while(!exec.isTerminated());
+      exec.shutdown();
+      while(!exec.isTerminated()){}
     }catch (Exception e){
       e.printStackTrace();
     }
