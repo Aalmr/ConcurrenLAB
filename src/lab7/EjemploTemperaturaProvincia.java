@@ -12,19 +12,37 @@ class Tarea{
     this.codPueblo=codPueblo;
     this.esVeneno= false;
   }
+  public boolean getVeneno(){
+    return esVeneno;
+  }
+  public int getCodPueblo(){
+    return codPueblo;
+  }
 }
 
-class CalculaMaxMin extends Thread{
+class HebraTemperatura extends Thread {
   BlockingQueue<Tarea> cola;
+  String fecha;
+  PuebloMaximaMinima MaxMin;
 
-  public CalculaMaxMin(BlockingQueue<Tarea> cola){
+  public HebraTemperatura(BlockingQueue<Tarea> cola, String fecha, PuebloMaximaMinima MaxMin) {
     this.cola = cola;
+    this.fecha = fecha;
+    this.MaxMin = MaxMin;
   }
 
-  public void run(){
-
+  public void run() {
+    try {
+      Tarea e = cola.take();
+      while (!e.getVeneno()) {
+        EjemploTemperaturaProvincia.ProcesaPueblo(fecha, e.getCodPueblo(), this.MaxMin, false);
+        e = cola.take();
+      }
+    } catch (InterruptedException ex) {
+      ex.printStackTrace();
+    }
   }
-  
+
 }
 class EjemploTemperaturaProvincia {
   public static void main(String[] args) {

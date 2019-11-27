@@ -211,7 +211,7 @@ class EjemploPalabraMasUsada1a {
       nombreFichero = "";
       System.out.println( "ERROR: Argumentos numericos incorrectos." );
       System.exit( -1 );
-    }
+    }¡
 
     // Lectura y carga de lineas en "arrayLineas".
     arrayLineas = readFile( nombreFichero );
