@@ -166,7 +166,35 @@ class EjemploTemperaturaProvincia {
     System.out.println();
     t1 = System.nanoTime();
     ExecutorService exec= Executors.newFixedThreadPool(numHebras);
-
+    class TareaPool implements Runnable{
+      String fecha;
+      PuebloMaximaMinima MaxMin;
+      int codPueblo;
+      public TareaPool(String fecha, PuebloMaximaMinima MaxMin, int codPueblo){
+        this.fecha=fecha;
+        this.MaxMin=MaxMin;
+        this.codPueblo=codPueblo;
+      }
+      @Override
+      public void run() {
+        EjemploTemperaturaProvincia.ProcesaPueblo(fecha, codPueblo, this.MaxMin, false);
+      }
+    }
+    File           archivo = null;
+    FileReader     fr      = null;
+    BufferedReader br      = null;
+    archivo = new File ("codPueblos.txt");
+    try {
+      fr = new FileReader(archivo);
+      br = new BufferedReader(fr);
+      String linea;
+      while ((linea = br.readLine()) != null) {
+        exec.execute(new TareaPool(fecha, MaxMin, Integer.parseInt(linea)));
+      }
+      while(!exec.isTerminated());
+    }catch (Exception e){
+      e.printStackTrace();
+    }
     t2 = System.nanoTime();
     tp = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
     System.out.print( "Implementacion paralela: Gestion Propia.     " );
@@ -292,7 +320,6 @@ class EjemploTemperaturaProvincia {
       }
     }
   }
-
   // --------------------------------------------------------------------------
   public static boolean ProcesaPueblo (String fecha, int codPueblo, PuebloMaximaMinima MaxMin,
                                        boolean imprime) {
