@@ -341,8 +341,8 @@ class EjemploTemperaturaProvincia {
 // ============================================================================
 class PuebloMaximaMinima {
 // ============================================================================
-  String poblacion;
-  int    codigo, max, min;
+  volatile String poblacion;
+  volatile int    codigo, max, min;
   
   
   // --------------------------------------------------------------------------
