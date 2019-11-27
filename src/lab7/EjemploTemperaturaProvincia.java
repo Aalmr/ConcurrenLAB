@@ -50,6 +50,7 @@ class EjemploTemperaturaProvincia {
     long               t1, t2, tt[];
     double             ts, tp;
     PuebloMaximaMinima MaxMin;
+
     
     // Comprobacion y extraccion de los argumentos de entrada.
     if( args.length != 3 ) {
@@ -91,6 +92,7 @@ class EjemploTemperaturaProvincia {
     String fecha;
     Calendar c = Calendar.getInstance();
     Integer dia, mes, anyo;
+    HebraTemperatura[] hebrast= new HebraTemperatura[numHebras];
     
     c.add(Calendar.DAY_OF_MONTH, desp);
     dia = c.get(Calendar.DATE);
@@ -125,6 +127,20 @@ class EjemploTemperaturaProvincia {
                            MaxMin.dameTemperaturaMaxima() + " , Minima = " +
                            MaxMin.dameTemperaturaMinima() );
 
+    // Implementacion con BlockingQueue
+    BlockingQueue<Tarea> cola= new LinkedBlockingQueue<>();
+    for(int i=0; i<numHebras;i++){
+     hebrast[i]=new HebraTemperatura(cola, fecha, MaxMin);
+     hebrast[i].start();
+    }
+    obtenMayorDiferencia_ParalelaDeFichero (fecha, codProvincia, MaxMin);
+    for(int i=0; i<numHebras;i++){
+      try{
+        hebrast[i].join();
+      }catch (InterruptedException e){
+        e.printStackTrace();
+      }
+    }
     //
     // Implementacion paralela: Thread Pool con Gestion Propia.
     //
@@ -187,7 +203,7 @@ class EjemploTemperaturaProvincia {
   // --------------------------------------------------------------------------
   
   public static void obtenMayorDiferencia_SecuencialDeFichero (String fecha, int codProvincia,
-                                                               PuebloMaximaMinima MaxMin) {
+                                                                  PuebloMaximaMinima MaxMin) {
     File           archivo = null;
     FileReader     fr      = null;
     BufferedReader br      = null;
@@ -205,6 +221,41 @@ class EjemploTemperaturaProvincia {
       while( ( linea = br.readLine() ) != null ) {
         int codPueblo = Integer.parseInt(linea);
         ProcesaPueblo(fecha, codPueblo, MaxMin, false);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }finally{
+      // Se aprovecha el finally para asegurar el cierre del fichero,
+      // tanto si todo va bien como si salta una excepcion.
+      try{
+        if( null != fr ){
+          fr.close();
+        }
+      }catch (Exception e2){
+        e2.printStackTrace();
+      }
+    }
+  }
+
+  public static void obtenMayorDiferencia_ParalelaDeFichero (String fecha, int codProvincia,
+                                                               PuebloMaximaMinima MaxMin, BlockingQueue<Tarea> cola) {
+    File           archivo = null;
+    FileReader     fr      = null;
+    BufferedReader br      = null;
+
+    // Procesa el fichero "codPueblos.txt"
+    try
+    {
+      // Apertura del fichero y creacion de BufferedReader para poder
+      // hacer una lectura comoda (disponer del metodo readLine()).
+      archivo = new File ("codPueblos.txt");
+      fr = new FileReader (archivo);
+      br = new BufferedReader(fr);
+
+      String linea;
+      while( ( linea = br.readLine() ) != null ) {
+        Tarea t= new Tarea(Integer.parseInt(linea));
+        cola.put(t);
       }
     } catch (Exception e) {
       e.printStackTrace();
