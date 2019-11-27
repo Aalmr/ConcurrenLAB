@@ -8,9 +8,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 class Tarea{
   boolean esVeneno;
   int codPueblo;
-  public Tarea(int codPueblo){
+  public Tarea(int codPueblo, boolean esVeneno){
     this.codPueblo=codPueblo;
-    this.esVeneno= false;
+    this.esVeneno=esVeneno;
   }
   public boolean getVeneno(){
     return esVeneno;
@@ -129,18 +129,27 @@ class EjemploTemperaturaProvincia {
 
     // Implementacion con BlockingQueue
     BlockingQueue<Tarea> cola= new LinkedBlockingQueue<>();
+    t1 = System.nanoTime();
     for(int i=0; i<numHebras;i++){
      hebrast[i]=new HebraTemperatura(cola, fecha, MaxMin);
      hebrast[i].start();
     }
-    obtenMayorDiferencia_ParalelaDeFichero (fecha, codProvincia, MaxMin);
+    obtenMayorDiferencia_ParalelaDeFichero (codProvincia, MaxMin, cola);
+
     for(int i=0; i<numHebras;i++){
-      try{
-        hebrast[i].join();
+      try {
+        cola.put(new Tarea(-1, true));
       }catch (InterruptedException e){
         e.printStackTrace();
       }
     }
+    t2 = System.nanoTime();
+    tp = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
+    System.out.print( "Implementacion BlockingQueue.     " );
+    System.out.println( " Tiempo(s): " + tp + " , Incremento: " + ts/tp );
+    System.out.println( "  Pueblo: "+  MaxMin.damePueblo() + " , Maxima = " +
+            MaxMin.dameTemperaturaMaxima() + " , Minima = " +
+            MaxMin.dameTemperaturaMinima() );
     //
     // Implementacion paralela: Thread Pool con Gestion Propia.
     //
@@ -237,7 +246,7 @@ class EjemploTemperaturaProvincia {
     }
   }
 
-  public static void obtenMayorDiferencia_ParalelaDeFichero (String fecha, int codProvincia,
+  public static void obtenMayorDiferencia_ParalelaDeFichero (int codProvincia,
                                                                PuebloMaximaMinima MaxMin, BlockingQueue<Tarea> cola) {
     File           archivo = null;
     FileReader     fr      = null;
@@ -254,7 +263,7 @@ class EjemploTemperaturaProvincia {
 
       String linea;
       while( ( linea = br.readLine() ) != null ) {
-        Tarea t= new Tarea(Integer.parseInt(linea));
+        Tarea t= new Tarea(Integer.parseInt(linea), false);
         cola.put(t);
       }
     } catch (Exception e) {
