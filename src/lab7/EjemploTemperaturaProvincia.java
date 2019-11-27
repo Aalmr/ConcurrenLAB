@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 class Tarea{
   boolean esVeneno;
   int codPueblo;
-  public Tarea(int codPueblo, boolean esVeneno){
+  public Tarea(int codPueblo, boolean esVeneno) {
     this.codPueblo=codPueblo;
     this.esVeneno=esVeneno;
   }
@@ -143,6 +143,15 @@ class EjemploTemperaturaProvincia {
         e.printStackTrace();
       }
     }
+
+    for(int i=0; i<numHebras;i++){
+      try {
+        hebrast[i].join();
+      }catch (InterruptedException ex){
+        ex.printStackTrace();
+      }
+    }
+
     t2 = System.nanoTime();
     tp = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
     System.out.print( "Implementacion BlockingQueue.     " );
@@ -153,17 +162,20 @@ class EjemploTemperaturaProvincia {
     //
     // Implementacion paralela: Thread Pool con Gestion Propia.
     //
-    /*
+
     System.out.println();
     t1 = System.nanoTime();
-    // ...
+    ExecutorService exec= Executors.newFixedThreadPool(numHebras);
+
     t2 = System.nanoTime();
     tp = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
     System.out.print( "Implementacion paralela: Gestion Propia.     " );
-    System.out.println( " Tiempo(s): " + tp + " , Incremento: " + ... );
-    System.out.println( "  Pueblo: " ... );
-     */
-    
+    System.out.println( " Tiempo(s): " + tp + " , Incremento: " + ts/tp);
+    System.out.println( "  Pueblo: "+  MaxMin.damePueblo() + " , Maxima = " +
+            MaxMin.dameTemperaturaMaxima() + " , Minima = " +
+            MaxMin.dameTemperaturaMinima() );
+
+
     //
     // Implementacion paralela: Thread Pool con awaitTermination.
     //
@@ -280,7 +292,7 @@ class EjemploTemperaturaProvincia {
       }
     }
   }
- 
+
   // --------------------------------------------------------------------------
   public static boolean ProcesaPueblo (String fecha, int codPueblo, PuebloMaximaMinima MaxMin,
                                        boolean imprime) {
@@ -341,8 +353,8 @@ class EjemploTemperaturaProvincia {
 // ============================================================================
 class PuebloMaximaMinima {
 // ============================================================================
-  volatile String poblacion;
-  volatile int    codigo, max, min;
+  String poblacion;
+  int    codigo, max, min;
   
   
   // --------------------------------------------------------------------------
@@ -354,7 +366,7 @@ class PuebloMaximaMinima {
   }
   
   // --------------------------------------------------------------------------
-  public void actualizaMaxMin( String poblacion, int codigo, int max, int min ) {
+  public synchronized void actualizaMaxMin( String poblacion, int codigo, int max, int min ) {
     if ((this.poblacion == null) || ((this.max-this.min) < (max-min)) ||
         (((this.max-this.min) == (max-min)) && (this.min > min)) ||
         (((this.max-this.min) == (max-min)) && (this.min == min) && (this.codigo > codigo))
