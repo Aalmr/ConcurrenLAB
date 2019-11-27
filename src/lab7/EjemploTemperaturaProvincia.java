@@ -213,8 +213,37 @@ class EjemploTemperaturaProvincia {
     //
     // Implementacion paralela: Thread Pool con Future.
     //
-    // ...
+    Future<Boolean> f;
+    exec=Executors.newFixedThreadPool(numHebras);
+    ArrayList<Future<Boolean>> temp=new ArrayList<>();
 
+    class TareaFuture implements Callable<Boolean>{
+      String fecha;
+      PuebloMaximaMinima MaxMin;
+      int codPueblo;
+      public TareaFuture (String fecha, PuebloMaximaMinima MaxMin, int codPueblo) {
+        this.fecha = fecha;
+        this.MaxMin = MaxMin;
+        this.codPueblo = codPueblo;
+      }
+      @Override
+      public Boolean call(){
+        return EjemploTemperaturaProvincia.ProcesaPueblo(fecha, codPueblo, this.MaxMin, false);
+      }
+    }
+    try {
+      fr = new FileReader(archivo);
+      br = new BufferedReader(fr);
+      String linea;
+      while ((linea = br.readLine()) != null) {
+        f=exec.submit(new TareaFuture(fecha, MaxMin, Integer.parseInt(linea)));
+        temp.add(f);
+      }
+      exec.shutdown();
+      while(!exec.isTerminated()){}
+    }catch (Exception e){
+      e.printStackTrace();
+    }
   }
   
   // --------------------------------------------------------------------------
