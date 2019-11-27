@@ -42,7 +42,6 @@ class HebraTemperatura extends Thread {
       ex.printStackTrace();
     }
   }
-
 }
 class EjemploTemperaturaProvincia {
   public static void main(String[] args) {
@@ -154,18 +153,13 @@ class EjemploTemperaturaProvincia {
 
     t2 = System.nanoTime();
     tp = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
+    System.out.println();
     System.out.print( "Implementacion BlockingQueue.     " );
     System.out.println( " Tiempo(s): " + tp + " , Incremento: " + ts/tp );
     System.out.println( "  Pueblo: "+  MaxMin.damePueblo() + " , Maxima = " +
             MaxMin.dameTemperaturaMaxima() + " , Minima = " +
             MaxMin.dameTemperaturaMinima() );
-    //
-    // Implementacion paralela: Thread Pool con Gestion Propia.
-    //
 
-    System.out.println();
-    t1 = System.nanoTime();
-    ExecutorService exec= Executors.newFixedThreadPool(numHebras);
     class TareaPool implements Runnable{
       String fecha;
       PuebloMaximaMinima MaxMin;
@@ -180,6 +174,15 @@ class EjemploTemperaturaProvincia {
         EjemploTemperaturaProvincia.ProcesaPueblo(fecha, codPueblo, this.MaxMin, false);
       }
     }
+
+    //
+    // Implementacion paralela: Thread Pool con Gestion Propia.
+    //
+
+    System.out.println();
+    t1 = System.nanoTime();
+    ExecutorService exec= Executors.newFixedThreadPool(numHebras);
+
     File           archivo = null;
     FileReader     fr      = null;
     BufferedReader br      = null;
@@ -208,7 +211,43 @@ class EjemploTemperaturaProvincia {
     //
     // Implementacion paralela: Thread Pool con awaitTermination.
     //
-    // ...
+    //
+
+
+    System.out.println();
+    t1 = System.nanoTime();
+    ExecutorService exec3= Executors.newFixedThreadPool(numHebras);
+
+    File           archivo3 = null;
+    FileReader     fr3      = null;
+    BufferedReader br3      = null;
+    archivo3 = new File ("codPueblos.txt");
+    try {
+      fr3 = new FileReader(archivo3);
+      br3 = new BufferedReader(fr3);
+      String linea;
+      while ((linea = br3.readLine()) != null) {
+        exec3.execute(new TareaPool(fecha, MaxMin, Integer.parseInt(linea)));
+      }
+    }catch (Exception e){
+      e.printStackTrace();
+    }
+
+    exec3.shutdown();
+    try{
+      while (!exec3.awaitTermination(2L, TimeUnit.MILLISECONDS));
+    } catch (InterruptedException e1){
+      e1.printStackTrace();
+    }
+
+
+    t2 = System.nanoTime();
+    tp = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
+    System.out.print( "Implementacion paralela: await Termination.     " );
+    System.out.println( " Tiempo(s): " + tp + " , Incremento: " + ts/tp);
+    System.out.println( "  Pueblo: "+  MaxMin.damePueblo() + " , Maxima = " +
+            MaxMin.dameTemperaturaMaxima() + " , Minima = " +
+            MaxMin.dameTemperaturaMinima() );
 
     //
     // Implementacion paralela: Thread Pool con Future.
