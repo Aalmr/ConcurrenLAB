@@ -105,11 +105,13 @@ class EjemploTemperaturaProvincia {
     //
     // Implementacion secuencial sin temporizar.
     //
+
     MaxMin = new PuebloMaximaMinima();
     obtenMayorDiferencia_SecuencialAFichero (fecha, codProvincia, MaxMin);
     System.out.println( "  Pueblo: " + MaxMin.damePueblo() + " , Maxima = " +
                         MaxMin.dameTemperaturaMaxima() + " , Minima = " +
                         MaxMin.dameTemperaturaMinima() );
+
     
     //
     // Implementacion secuencial.
@@ -252,22 +254,26 @@ class EjemploTemperaturaProvincia {
     //
     // Implementacion paralela: Thread Pool con Future.
     //
-    Future<Boolean> f;
-    exec=Executors.newFixedThreadPool(numHebras);
-    ArrayList<Future<Boolean>> temp=new ArrayList<>();
 
-    class TareaFuture implements Callable<Boolean>{
+    System.out.println();
+    t1 = System.nanoTime();
+
+    Future<PuebloMaximaMinima> f;
+    exec=Executors.newFixedThreadPool(numHebras);
+    ArrayList<Future<PuebloMaximaMinima>> temp=new ArrayList<>();
+
+    class TareaFuture implements Callable<PuebloMaximaMinima>{
       String fecha;
-      PuebloMaximaMinima MaxMin;
       int codPueblo;
-      public TareaFuture (String fecha, PuebloMaximaMinima MaxMin, int codPueblo) {
+      public TareaFuture (String fecha, int codPueblo) {
         this.fecha = fecha;
-        this.MaxMin = MaxMin;
         this.codPueblo = codPueblo;
       }
       @Override
-      public Boolean call(){
-        return EjemploTemperaturaProvincia.ProcesaPueblo(fecha, codPueblo, this.MaxMin, false);
+      public PuebloMaximaMinima call(){
+        PuebloMaximaMinima MaxMinFuture=new PuebloMaximaMinima();
+        EjemploTemperaturaProvincia.ProcesaPueblo(fecha, codPueblo, MaxMinFuture, false);
+        return MaxMinFuture;
       }
     }
     try {
@@ -275,14 +281,30 @@ class EjemploTemperaturaProvincia {
       br = new BufferedReader(fr);
       String linea;
       while ((linea = br.readLine()) != null) {
-        f=exec.submit(new TareaFuture(fecha, MaxMin, Integer.parseInt(linea)));
+        f=exec.submit(new TareaFuture(fecha,Integer.parseInt(linea)));
         temp.add(f);
       }
       exec.shutdown();
-      while(!exec.isTerminated()){}
+      int diferencia=0;
+      for(int i = 0; i < temp.size(); i++){
+        f=temp.get(i);
+        PuebloMaximaMinima candidato=f.get();
+        if(candidato.dameTemperaturaMaxima()-candidato.dameTemperaturaMinima()>diferencia){
+          diferencia=candidato.dameTemperaturaMaxima()-candidato.dameTemperaturaMinima();
+          MaxMin=candidato;
+        }
+
+      }
     }catch (Exception e){
       e.printStackTrace();
     }
+    t2 = System.nanoTime();
+    tp = ( ( double ) ( t2 - t1 ) ) / 1.0e9;
+    System.out.print( "Implementacion Future:     " );
+    System.out.println( " Tiempo(s): " + tp + " , Incremento: " + ts/tp);
+    System.out.println( "  Pueblo: "+  MaxMin.damePueblo() + " , Maxima = " +
+            MaxMin.dameTemperaturaMaxima() + " , Minima = " +
+            MaxMin.dameTemperaturaMinima() );
   }
   
   // --------------------------------------------------------------------------
