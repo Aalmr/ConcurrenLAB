@@ -289,11 +289,7 @@ class EjemploTemperaturaProvincia {
       for(int i = 0; i < temp.size(); i++){
         f=temp.get(i);
         PuebloMaximaMinima candidato=f.get();
-        if(candidato.dameTemperaturaMaxima()-candidato.dameTemperaturaMinima()>diferencia){
-          diferencia=candidato.dameTemperaturaMaxima()-candidato.dameTemperaturaMinima();
-          MaxMin=candidato;
-        }
-
+        MaxMin.actualizaMaxMin(candidato.damePueblo(), candidato.dameCodigo(), candidato.dameTemperaturaMaxima(), candidato.dameTemperaturaMinima());
       }
     }catch (Exception e){
       e.printStackTrace();
